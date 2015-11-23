@@ -8,6 +8,7 @@
 #include <boost/asio.hpp>
 
 using namespace std;
+using namespace boost::asio;
 using boost::asio::ip::tcp;
 
 MuddClient::MuddClient()
@@ -38,12 +39,12 @@ int MuddClient::Startup()
         }
 
         // Connect to things or something
-        boost::asio::io_service io_service;
+        io_service io_service;
         tcp::resolver resolver(io_service);
         tcp::resolver::query query(ip, "10616");
         tcp::resolver::iterator endpoint_iterator = resolver.resolve(query);
         tcp::socket socket(io_service);
-        boost::asio::connect(socket, endpoint_iterator);
+        connect(socket, endpoint_iterator);
 
         while (true)
         {

@@ -27,12 +27,24 @@
     <ClCompile Include="MuddClient.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="TcpServer.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="TcpConnection.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="MuddServer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="MuddClient.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="TcpServer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="TcpConnection.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

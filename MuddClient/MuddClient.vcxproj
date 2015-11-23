@@ -157,10 +157,14 @@
     <ClCompile Include="Main.cpp" />
     <ClCompile Include="MuddClient.cpp" />
     <ClCompile Include="MuddServer.cpp" />
+    <ClCompile Include="TcpConnection.cpp" />
+    <ClCompile Include="TcpServer.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="MuddClient.h" />
     <ClInclude Include="MuddServer.h" />
+    <ClInclude Include="TcpConnection.h" />
+    <ClInclude Include="TcpServer.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

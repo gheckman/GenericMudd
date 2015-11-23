@@ -8,7 +8,11 @@
 #include <boost/array.hpp>
 #include <boost/asio.hpp>
 
+// Local
+#include "TcpServer.h"
+
 using namespace std;
+using namespace boost::asio;
 using boost::asio::ip::tcp;
 
 MuddServer::MuddServer()
@@ -21,7 +25,8 @@ int MuddServer::Startup()
 {
     try
     {
-        boost::asio::io_service io_service;
+        /*
+        io_service io_service;
         tcp::acceptor acceptor(io_service, tcp::endpoint(tcp::v4(), 10616));
 
         // TODO: Only allows a single client at a time. Allow multiple
@@ -42,9 +47,16 @@ int MuddServer::Startup()
                 string response;
                 ParseMessage(buf.c_array(), len, response);
                 boost::system::error_code ignored_error;
-                boost::asio::write(socket, boost::asio::buffer(response), ignored_error);
+                write(socket, boost::asio::buffer(response), ignored_error);
             }
         }
+        */
+
+        //We need to create a server object to accept incoming client connections.The asio::io_service object provides I / O services, such as sockets, that the server object will use.
+        io_service io_service;
+        TcpServer server(io_service);
+        //Run the asio::io_service object so that it will perform asynchronous operations on your behalf.
+        io_service.run();
     }
     catch (std::exception& e)
     {
