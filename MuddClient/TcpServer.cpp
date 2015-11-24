@@ -3,9 +3,6 @@
 // Boost
 #include <boost/bind.hpp>
 
-// Local
-#include "TcpConnection.h"
-
 TcpServer::TcpServer(io_service& ioService, int port) : _acceptor(ioService, tcp::endpoint(tcp::v4(), port))
 {
     StartAccept();

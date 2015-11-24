@@ -5,12 +5,6 @@
 
 using namespace boost::asio::placeholders;
 
-TcpConnection::TcpConnection()
-{}
-
-TcpConnection::~TcpConnection()
-{}
-
 TcpConnection::pointer TcpConnection::Create(io_service & io_service)
 {
     return pointer(new TcpConnection(io_service));

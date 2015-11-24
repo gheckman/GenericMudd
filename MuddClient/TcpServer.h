@@ -6,6 +6,9 @@
 // Boost
 #include <boost/asio.hpp>
 
+// Local
+#include "TcpConnection.h"
+
 using namespace boost::asio;
 
 class TcpServer
