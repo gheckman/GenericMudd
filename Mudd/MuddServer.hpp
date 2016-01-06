@@ -168,12 +168,12 @@ class MuddComm : public MuddUser, public boost::enable_shared_from_this<MuddComm
         auto msg_up = msgs.Pop();
         while (msg_up)
         {
-            if (msg_up->Header() == ChatMessage::HEADER())
+            if (msg_up->Header() == ChatMessage::HEADER)
             {
                 ChatMessage* msg = dynamic_cast<ChatMessage*>(msg_up.get());
                 ProcessMessage(*msg);
             }
-            else if (msg_up->Header() == TimeMessage::HEADER())
+            else if (msg_up->Header() == TimeMessage::HEADER)
             {
                 TimeMessage* msg = dynamic_cast<TimeMessage*>(msg_up.get());
                 ProcessMessage(*msg);

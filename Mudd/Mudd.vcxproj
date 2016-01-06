@@ -159,6 +159,7 @@
     <ClInclude Include="targetver.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="Message.cpp" />
     <ClCompile Include="MuddCommTest.cpp" />
     <ClCompile Include="stdafx.cpp" />
   </ItemGroup>

@@ -114,7 +114,7 @@ class MuddClient
         auto msg_up = msgs.Pop();
         while (msg_up)
         {
-            if (msg_up->Header() == ChatMessage::HEADER())
+            if (msg_up->Header() == ChatMessage::HEADER)
             {
                 auto msg = dynamic_cast<ChatMessage*>(msg_up.get());
                 ProcessMessage(*msg);
