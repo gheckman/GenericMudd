@@ -161,6 +161,7 @@
   <ItemGroup>
     <ClCompile Include="Message.cpp" />
     <ClCompile Include="MuddCommTest.cpp" />
+    <ClCompile Include="MuddServer.cpp" />
     <ClCompile Include="stdafx.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
