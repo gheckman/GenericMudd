@@ -1,3 +1,7 @@
+#include "stdafx.h"
+
+#include <boost/thread/thread.hpp>
+
 #include "MuddServer.hpp"
 #include "MuddClient.hpp"
 #include "CommandDecoder.hpp"

@@ -50,5 +50,11 @@
     <ClCompile Include="MuddServer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="MuddClient.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="CommandDecoder.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>
