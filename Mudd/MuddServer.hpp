@@ -82,7 +82,6 @@ class MuddComm : public MuddUser, public boost::enable_shared_from_this<MuddComm
     private:
     tcp::socket _socket;
     ChatRoom& _room;
-    char _tempReadMsg[1024];
     std::vector<char> _readMsg;
     std::vector<char> _writeMsg;
     std::deque<MessageBuffer> _writeMsgs;
