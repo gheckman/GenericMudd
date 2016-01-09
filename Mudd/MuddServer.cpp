@@ -3,6 +3,12 @@
 #include <algorithm>
 #include <cstdlib>
 #include <iostream>
+#include <functional>
+
+using boost::asio::async_read;
+using boost::asio::buffer;
+using std::bind;
+using std::placeholders::_1;
 
 // ChatRoom --------------------------------------------------------------------
 
@@ -23,9 +29,8 @@ void MuddComm::Start()
 
     // Reserve space for the header, then read it in
     _readMsg.resize(MessageBuffer::HEADER_LENGTH, '\0');
-    boost::asio::async_read(_socket,
-                            boost::asio::buffer(_readMsg.data(), MessageBuffer::HEADER_LENGTH),
-                            boost::bind(&MuddComm::HandleReadHeader, shared_from_this(), boost::asio::placeholders::error));
+
+    async_read(_socket, buffer(_readMsg.data(), MessageBuffer::HEADER_LENGTH), bind(&MuddComm::HandleReadHeader, shared_from_this(), _1));
 }
 
 void MuddComm::Deliver(MessageBuffer msgs)
@@ -35,13 +40,11 @@ void MuddComm::Deliver(MessageBuffer msgs)
     if (!WriteInProgress)
     {
         _writeMsg = _writeMsgs.front().Serialize();
-        boost::asio::async_write(_socket,
-                                    boost::asio::buffer(_writeMsg.data(), _writeMsg.size()),
-                                    boost::bind(&MuddComm::HandleWrite, shared_from_this(), boost::asio::placeholders::error));
+        async_write(_socket, buffer(_writeMsg.data(), _writeMsg.size()), bind(&MuddComm::HandleWrite, shared_from_this(), _1));
     }
 }
 
-void MuddComm::HandleReadHeader(const boost::system::error_code& error)
+void MuddComm::HandleReadHeader(const error_code& error)
 {
     if (!error)
     {
@@ -50,9 +53,7 @@ void MuddComm::HandleReadHeader(const boost::system::error_code& error)
 
         // reserve enough space for the header and the payload, then read in the payload
         _readMsg.resize(MessageBuffer::HEADER_LENGTH + payloadSize, '\0');
-        boost::asio::async_read(_socket,
-                                boost::asio::buffer(_readMsg.data() + MessageBuffer::HEADER_LENGTH, payloadSize),
-                                boost::bind(&MuddComm::HandleReadBody, shared_from_this(), boost::asio::placeholders::error));
+        async_read(_socket, buffer(_readMsg.data() + MessageBuffer::HEADER_LENGTH, payloadSize), bind(&MuddComm::HandleReadBody, shared_from_this(), _1));
     }
     else
     {
@@ -60,7 +61,7 @@ void MuddComm::HandleReadHeader(const boost::system::error_code& error)
     }
 }
 
-void MuddComm::HandleReadBody(const boost::system::error_code& error)
+void MuddComm::HandleReadBody(const error_code& error)
 {
     if (!error)
     {
@@ -71,9 +72,7 @@ void MuddComm::HandleReadBody(const boost::system::error_code& error)
 
         // Reserve space for the header, then read it in
         _readMsg.resize(MessageBuffer::HEADER_LENGTH, '\0');
-        boost::asio::async_read(_socket,
-                                boost::asio::buffer(_readMsg.data(), MessageBuffer::HEADER_LENGTH),
-                                boost::bind(&MuddComm::HandleReadHeader, shared_from_this(), boost::asio::placeholders::error));
+        async_read(_socket, buffer(_readMsg.data(), MessageBuffer::HEADER_LENGTH), bind(&MuddComm::HandleReadHeader, shared_from_this(), _1));
     }
     else
     {
@@ -81,7 +80,7 @@ void MuddComm::HandleReadBody(const boost::system::error_code& error)
     }
 }
 
-void MuddComm::HandleWrite(const boost::system::error_code& error)
+void MuddComm::HandleWrite(const error_code& error)
 {
     if (!error)
     {
@@ -89,9 +88,7 @@ void MuddComm::HandleWrite(const boost::system::error_code& error)
         if (!_writeMsgs.empty())
         {
             _writeMsg = _writeMsgs.front().Serialize();
-            boost::asio::async_write(_socket,
-                                        boost::asio::buffer(_writeMsg.data(), _writeMsg.size()),
-                                        boost::bind(&MuddComm::HandleWrite, shared_from_this(), boost::asio::placeholders::error));
+            async_write(_socket, buffer(_writeMsg.data(), _writeMsg.size()), bind(&MuddComm::HandleWrite, shared_from_this(), _1));
         }
     }
     else
@@ -136,8 +133,7 @@ void MuddComm::ProcessMessage(const TimeMessage& timeMsg)
 void MuddServer::StartAccept()
 {
     MuddComm_sp new_session(new MuddComm(_ioService, _room));
-    _acceptor.async_accept(new_session->Socket(),
-                            boost::bind(&MuddServer::HandleAccept, this, new_session, boost::asio::placeholders::error));
+    _acceptor.async_accept(new_session->Socket(), bind(&MuddServer::HandleAccept, this, new_session, _1));
 }
 
 void MuddServer::HandleAccept(MuddComm_sp session, const boost::system::error_code& error)

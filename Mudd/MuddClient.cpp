@@ -1,19 +1,26 @@
-//#include <boost/thread/thread.hpp>
-
 #include "MuddClient.hpp"
 
-MuddClient::MuddClient(boost::asio::io_service& ioService, tcp::resolver::iterator endpointIterator) :
+#include <deque>
+#include <cstdlib>
+#include <iostream>
+#include <functional>
+
+using boost::asio::async_read;
+using boost::asio::buffer;
+using std::bind;
+using std::placeholders::_1;
+
+MuddClient::MuddClient(io_service& ioService, tcp::resolver::iterator endpointIterator) :
     _ioService(ioService),
     _socket(ioService)
 {
-    auto handleConnect = [&](const boost::system::error_code& ec, tcp::resolver::iterator) { HandleConnect(ec); };
-    boost::asio::async_connect(_socket, endpointIterator, handleConnect);
+    async_connect(_socket, endpointIterator, bind(&MuddClient::HandleConnect, this, _1));
 }
 
 void MuddClient::Write(MessageBuffer& msgs)
 {
     _writeMsg = msgs.Serialize();
-    _ioService.post([&] { DoWrite(_writeMsg); });
+    _ioService.post( [&]{DoWrite(_writeMsg);} );
 }
 
 void MuddClient::HandleConnect(const boost::system::error_code& error)
@@ -22,9 +29,7 @@ void MuddClient::HandleConnect(const boost::system::error_code& error)
     {
         // Reserve space for the header, then read it in
         _readMsg.resize(MessageBuffer::HEADER_LENGTH, '\0');
-        boost::asio::async_read(_socket,
-                                boost::asio::buffer(_readMsg.data(), MessageBuffer::HEADER_LENGTH),
-                                boost::bind(&MuddClient::HandleReadHeader, this, boost::asio::placeholders::error));
+        async_read(_socket, buffer(_readMsg.data(), MessageBuffer::HEADER_LENGTH), bind(&MuddClient::HandleReadHeader, this, _1));
     }
 }
 
@@ -37,9 +42,7 @@ void MuddClient::HandleReadHeader(const boost::system::error_code& error)
 
         // reserve enough space for the header and the payload, then read in the payload
         _readMsg.resize(MessageBuffer::HEADER_LENGTH + payloadSize, '\0');
-        boost::asio::async_read(_socket,
-                                boost::asio::buffer(_readMsg.data() + MessageBuffer::HEADER_LENGTH, payloadSize),
-                                boost::bind(&MuddClient::HandleReadBody, this, boost::asio::placeholders::error));
+        async_read(_socket, buffer(_readMsg.data() + MessageBuffer::HEADER_LENGTH, payloadSize), bind(&MuddClient::HandleReadBody, this, _1));
     }
     else
     {
@@ -58,9 +61,7 @@ void MuddClient::HandleReadBody(const boost::system::error_code& error)
 
         // Reserve space for the header, then read it in
         _readMsg.resize(MessageBuffer::HEADER_LENGTH, '\0');
-        boost::asio::async_read(_socket,
-                                boost::asio::buffer(_readMsg.data(), MessageBuffer::HEADER_LENGTH),
-                                boost::bind(&MuddClient::HandleReadHeader, this, boost::asio::placeholders::error));
+        async_read(_socket, buffer(_readMsg.data(), MessageBuffer::HEADER_LENGTH), bind(&MuddClient::HandleReadHeader, this, _1));
     }
     else
     {
@@ -70,9 +71,7 @@ void MuddClient::HandleReadBody(const boost::system::error_code& error)
 
 void MuddClient::DoWrite(const std::vector<char>& buf)
 {
-    boost::asio::async_write(_socket,
-                                boost::asio::buffer(_writeMsg.data(), _writeMsg.size()),
-                                boost::bind(&MuddClient::HandleWrite, this, boost::asio::placeholders::error));
+    async_write(_socket, buffer(_writeMsg.data(), _writeMsg.size()), bind(&MuddClient::HandleWrite, this, _1));
 }
 
 void MuddClient::ProcessMessageBuffer(MessageBuffer& msgs)

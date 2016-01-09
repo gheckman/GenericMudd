@@ -10,35 +10,34 @@
 
 #pragma once
 
-#include <cstdlib>
-#include <deque>
-#include <iostream>
-#include <boost/bind.hpp>
-#include <boost/asio.hpp>
-
 #include "Message.hpp"
 
+#include <vector>
+#include <boost/asio.hpp>
+
+using boost::asio::io_service;
 using boost::asio::ip::tcp;
+using boost::system::error_code;
 
 class MuddClient
 {
     public:
-    MuddClient(boost::asio::io_service& ioService, tcp::resolver::iterator endpointIterator);
+    MuddClient(io_service& ioService, tcp::resolver::iterator endpointIterator);
 
     void Write(MessageBuffer& msgs);
 
     void Close() { _ioService.post( [&]{DoClose();} ); }
 
     private:
-    void HandleConnect(const boost::system::error_code& error);
+    void HandleConnect(const error_code& error);
 
-    void HandleReadHeader(const boost::system::error_code& error);
+    void HandleReadHeader(const error_code& error);
 
-    void HandleReadBody(const boost::system::error_code& error);
+    void HandleReadBody(const error_code& error);
 
     void DoWrite(const std::vector<char>& buf);
 
-    void HandleWrite(const boost::system::error_code& error) { if (error) DoClose(); }
+    void HandleWrite(const error_code& error) { if (error) DoClose(); }
 
     void ProcessMessageBuffer(MessageBuffer& msgs);
 
@@ -46,7 +45,7 @@ class MuddClient
 
     void DoClose() { _socket.close(); }
 
-    boost::asio::io_service& _ioService;
+    io_service& _ioService;
     tcp::socket _socket;
     std::vector<char> _readMsg;
     std::vector<char> _writeMsg;
