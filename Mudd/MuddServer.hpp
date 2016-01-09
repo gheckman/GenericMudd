@@ -10,19 +10,18 @@
 
 #pragma once
 
+#include "Message.hpp"
+
 #include <deque>
 #include <list>
 #include <memory>
 #include <set>
 
-#include <boost/bind.hpp>
-#include <boost/shared_ptr.hpp>
-#include <boost/enable_shared_from_this.hpp>
 #include <boost/asio.hpp>
 
-#include "Message.hpp"
-
+using boost::asio::io_service;
 using boost::asio::ip::tcp;
+using boost::system::error_code;
 using std::cout;
 using std::endl;
 
@@ -35,7 +34,7 @@ class MuddUser
     virtual void Deliver(MessageBuffer msg) = 0;
 };
 
-typedef boost::shared_ptr<MuddUser> MuddUser_sp;
+typedef std::shared_ptr<MuddUser> MuddUser_sp;
 
 //----------------------------------------------------------------------
 
@@ -55,10 +54,10 @@ class ChatRoom
 
 //----------------------------------------------------------------------
 
-class MuddComm : public MuddUser, public boost::enable_shared_from_this<MuddComm>
+class MuddComm : public MuddUser, public std::enable_shared_from_this<MuddComm>
 {
     public:
-    MuddComm(boost::asio::io_service& ioService, ChatRoom& room) : _socket(ioService), _room(room)
+    MuddComm(io_service& ioService, ChatRoom& room) : _socket(ioService), _room(room)
     {}
 
     tcp::socket& Socket() { return _socket; }
@@ -67,11 +66,11 @@ class MuddComm : public MuddUser, public boost::enable_shared_from_this<MuddComm
 
     void Deliver(MessageBuffer msgs);
 
-    void HandleReadHeader(const boost::system::error_code& error);
+    void HandleReadHeader(const error_code& error);
 
-    void HandleReadBody(const boost::system::error_code& error);
+    void HandleReadBody(const error_code& error);
 
-    void HandleWrite(const boost::system::error_code& error);
+    void HandleWrite(const error_code& error);
 
     void ProcessMessageBuffer(MessageBuffer& msgs);
 
@@ -87,14 +86,14 @@ class MuddComm : public MuddUser, public boost::enable_shared_from_this<MuddComm
     std::deque<MessageBuffer> _writeMsgs;
 };
 
-typedef boost::shared_ptr<MuddComm> MuddComm_sp;
+typedef std::shared_ptr<MuddComm> MuddComm_sp;
 
 //----------------------------------------------------------------------
 
 class MuddServer
 {
     public:
-    MuddServer(boost::asio::io_service& ioService, const tcp::endpoint& endpoint) :
+    MuddServer(io_service& ioService, const tcp::endpoint& endpoint) :
         _ioService(ioService),
         _acceptor(ioService, endpoint)
     {
@@ -103,15 +102,15 @@ class MuddServer
 
     void StartAccept();
 
-    void HandleAccept(MuddComm_sp session, const boost::system::error_code& error);
+    void HandleAccept(MuddComm_sp session, const error_code& error);
 
     private:
-    boost::asio::io_service& _ioService;
+    io_service& _ioService;
     tcp::acceptor _acceptor;
     ChatRoom _room;
 };
 
-typedef boost::shared_ptr<MuddServer> MuddServer_ptr;
+typedef std::shared_ptr<MuddServer> MuddServer_ptr;
 typedef std::list<MuddServer_ptr> MuddServer_list;
 
 //----------------------------------------------------------------------
