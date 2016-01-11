@@ -229,3 +229,9 @@ _Pvt_Extensions
 
 # FAKE - F# Make
 .fake/
+
+#generated dependency files
+*.d
+
+#temporary object files
+*.o
