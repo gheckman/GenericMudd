@@ -15,7 +15,8 @@ using std::placeholders::_1;
 void ChatRoom::Deliver(const ChatMessage& chat)
 {
     MessageBuffer msgs;
-    msgs.Push(std::unique_ptr<Message>(new ChatMessage(chat)));
+    auto ptr = std::unique_ptr<Message>(new ChatMessage(chat));
+    msgs.Push(ptr);
 
     for (auto& user : _users)
         user->Deliver(msgs);
@@ -123,7 +124,8 @@ void MuddComm::ProcessMessage(const TimeMessage& timeMsg)
     auto now = time(0);
     auto s = ctime(&now);
     auto timeChat = std::unique_ptr<Message>(new ChatMessage(s));
-    msgs.Push(std::move(timeChat));
+    
+    msgs.Push(timeChat);
 
     Deliver(msgs);
 }
