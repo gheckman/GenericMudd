@@ -1,4 +1,5 @@
 #include "Message.hpp"
+#include <cstring>
 
 // Message Headers -------------------------------------------------------------
 
@@ -89,7 +90,7 @@ std::unique_ptr<Message> MessageBuffer::Pop(void)
 std::vector<char> MessageBuffer::Serialize(void) const
 {
     std::vector<char> rv((size_t)HEADER_LENGTH);
-    int payloadSize = 0;
+    uint32_t payloadSize = 0;
 
     rv[0] = VERSION;
     rv[1] = (char)_messages.size();
@@ -101,7 +102,7 @@ std::vector<char> MessageBuffer::Serialize(void) const
         rv.insert(rv.end(), s.begin(), s.end());
     }
 
-    memcpy(rv.data() + 2, &payloadSize, sizeof(int));
+    memcpy(rv.data() + 2, &payloadSize, sizeof(uint32_t));
 
     return rv;
 }

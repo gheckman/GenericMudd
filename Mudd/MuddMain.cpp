@@ -84,7 +84,8 @@ void StartClient(void)
         {
             if (line != "")
             {
-                msgs.Push(CommandDecoder::Decode(line));
+                auto msg = CommandDecoder::Decode(line);
+                msgs.Push(msg);
                 client.Write(msgs);
                 msgs.Clear();
             }
