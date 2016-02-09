@@ -1,22 +1,48 @@
 #include "stdafx.h"
 
-#include <boost/thread/thread.hpp>
-
 #include "MuddServer.hpp"
 #include "MuddClient.hpp"
 #include "CommandDecoder.hpp"
 
-void StartServer();
-void StartClient();
+#include <boost/thread/thread.hpp>
+
+void GetServerClient(void);
+void StartServer(void);
+void StartClient(void);
 
 int main(int argc, char* argv[])
 {
     srand((unsigned)time(NULL));
-    getchar() == 's' ? StartServer() : StartClient();
+    GetServerClient();
+
     return 0;
 }
 
-void StartServer()
+void GetServerClient(void)
+{
+    std::cout << "Start as server or client? <s/c>: ";
+
+    bool done = false;
+    do {
+        std::string s;
+        getline(std::cin, s);
+        switch(s[0])
+        {
+            case 'c':
+                std::cout << "Starting as client: " << std::endl;
+                StartClient();
+                done = true;
+                break;
+            case 's':
+                std::cout << "Starting as server: " << std::endl;
+                StartServer();
+                done = true;
+                break;
+        }
+    } while(!done);
+}
+
+void StartServer(void)
 {
     try
     {
@@ -35,7 +61,7 @@ void StartServer()
     }
 }
 
-void StartClient()
+void StartClient(void)
 {
     try
     {

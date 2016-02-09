@@ -74,9 +74,11 @@ class MuddComm : public MuddUser, public std::enable_shared_from_this<MuddComm>
 
     void ProcessMessageBuffer(MessageBuffer& msgs);
 
-    void ProcessMessage(const ChatMessage& chat) { _room.Deliver(chat); }
+    void ProcessMessage(const ChatMessage& chatMsg) { _room.Deliver(chatMsg); }
 
     void ProcessMessage(const TimeMessage& timeMsg);
+
+    void ProcessMessage(const PingMessage& pingMsg);
 
     private:
     tcp::socket _socket;

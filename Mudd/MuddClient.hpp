@@ -12,7 +12,9 @@
 
 #include "Message.hpp"
 
+#include <chrono>
 #include <vector>
+
 #include <boost/asio.hpp>
 
 using boost::asio::io_service;
@@ -42,6 +44,7 @@ class MuddClient
     void ProcessMessageBuffer(MessageBuffer& msgs);
 
     void ProcessMessage(const ChatMessage& chat);
+    void ProcessMessage(const PingMessage& ping);
 
     void DoClose() { _socket.close(); }
 

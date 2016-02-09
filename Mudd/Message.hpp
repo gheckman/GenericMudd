@@ -1,6 +1,7 @@
 #pragma once
 
 #include <algorithm>
+#include <cstdint>
 #include <iostream>
 #include <iterator>
 #include <list>
@@ -26,7 +27,7 @@ class Message
 
     virtual std::vector<char> Serialize(void) const { std::string header = Header(); return std::vector<char>(header.begin(), header.end()); }
 
-    virtual size_t Deserialize(char*) { return Message::HEADER_LENGTH; }
+    virtual size_t Deserialize(const char* const) { return Message::HEADER_LENGTH; }
 };
 
 class VoidMessage : public Message
@@ -48,7 +49,7 @@ class ChatMessage : public Message
 
     ChatMessage(void) = default;
 
-    ChatMessage(const std::string& chat) : ChatMessage() { Chat(chat); }
+    ChatMessage(const std::string& chat) { Chat(chat); }
 
     Message* copy() const override { return new ChatMessage(*this); };
 
@@ -62,7 +63,7 @@ class ChatMessage : public Message
 
     virtual std::vector<char> Serialize() const override;
 
-    virtual size_t Deserialize(char* msg) override;
+    virtual size_t Deserialize(const char* const msg) override;
 
     private:
     std::string _chat;
@@ -76,6 +77,31 @@ class TimeMessage : public Message
     Message* copy() const override { return new TimeMessage(*this); };
 
     virtual std::string Header(void) const override { return HEADER; };
+};
+
+class PingMessage : public Message
+{
+    public:
+    static const std::string HEADER;
+
+    PingMessage() { }
+
+    PingMessage(const uint16_t& ticks) { Ticks(ticks); }
+
+    void Ticks(const uint16_t& ticks) { _ticks = ticks; }
+
+    uint16_t Ticks(void) const { return _ticks; }
+
+    Message* copy() const override { return new PingMessage(*this); };
+
+    virtual std::string Header(void) const override { return HEADER; };
+
+    virtual std::vector<char> Serialize() const override;
+
+    virtual size_t Deserialize(const char* const msg) override;
+
+    private:
+        uint16_t _ticks;
 };
 
 class MessageFactory

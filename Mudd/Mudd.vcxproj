@@ -161,7 +161,7 @@
     <ClCompile Include="CommandDecoder.cpp" />
     <ClCompile Include="Message.cpp" />
     <ClCompile Include="MuddClient.cpp" />
-    <ClCompile Include="MuddCommTest.cpp" />
+    <ClCompile Include="MuddMain.cpp" />
     <ClCompile Include="MuddServer.cpp" />
     <ClCompile Include="stdafx.cpp" />
   </ItemGroup>

@@ -84,6 +84,11 @@ void MuddClient::ProcessMessageBuffer(MessageBuffer& msgs)
             auto msg = dynamic_cast<ChatMessage*>(msg_up.get());
             ProcessMessage(*msg);
         }
+        else if (msg_up->Header() == PingMessage::HEADER)
+        {
+            auto msg = dynamic_cast<PingMessage*>(msg_up.get());
+            ProcessMessage(*msg);
+        }
         msg_up = msgs.Pop();
     }
 }
@@ -92,4 +97,15 @@ void MuddClient::ProcessMessage(const ChatMessage& chat)
 {
     auto s = chat.Chat();
     std::cout << s << std::endl;
+}
+
+void MuddClient::ProcessMessage(const PingMessage& ping)
+{
+    uint16_t msOldTime16 = ping.Ticks();
+    uint64_t msSinceEpoch =
+        std::chrono::steady_clock::now().time_since_epoch() /
+        std::chrono::milliseconds(1);
+    uint16_t msSinceEpoch16 = (msSinceEpoch & UINT16_MAX);
+
+    std::cout << "ping: " << (msSinceEpoch16 - msOldTime16) << " ms" << std::endl;
 }

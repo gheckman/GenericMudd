@@ -112,6 +112,11 @@ void MuddComm::ProcessMessageBuffer(MessageBuffer& msgs)
             TimeMessage* msg = dynamic_cast<TimeMessage*>(msg_up.get());
             ProcessMessage(*msg);
         }
+        else if (msg_up->Header() == PingMessage::HEADER)
+        {
+            PingMessage* msg = dynamic_cast<PingMessage*>(msg_up.get());
+            ProcessMessage(*msg);
+        }
 
         msg_up = msgs.Pop();
     }
@@ -124,6 +129,15 @@ void MuddComm::ProcessMessage(const TimeMessage& timeMsg)
     auto s = ctime(&now);
     auto timeChat = std::unique_ptr<Message>(new ChatMessage(s));
     msgs.Push(std::move(timeChat));
+
+    Deliver(msgs);
+}
+
+void MuddComm::ProcessMessage(const PingMessage& pingMsg)
+{
+    MessageBuffer msgs;
+    auto ping_up = std::unique_ptr<Message>(new PingMessage(pingMsg.Ticks()));
+    msgs.Push(ping_up);
 
     Deliver(msgs);
 }

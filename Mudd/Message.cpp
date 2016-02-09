@@ -6,6 +6,7 @@ const std::string Message::HEADER = "AMSG";
 const std::string VoidMessage::HEADER = "VOID";
 const std::string ChatMessage::HEADER = "CHAT";
 const std::string TimeMessage::HEADER = "TIME";
+const std::string PingMessage::HEADER = "PING";
 
 // ChatMessage -----------------------------------------------------------------
 
@@ -25,12 +26,28 @@ std::vector<char> ChatMessage::Serialize() const
     return rv;
 }
 
-size_t ChatMessage::Deserialize(char* msg)
+size_t ChatMessage::Deserialize(const char* const msg)
 {
     size_t size = msg[Message::HEADER_LENGTH];
-    msg += Message::HEADER_LENGTH + 1;
-    Chat(std::string(msg, size));
-    return size + Message::HEADER_LENGTH;
+    Chat(std::string(&msg[HEADER_LENGTH + 1], size));
+    return Message::HEADER_LENGTH + 1 + size;
+}
+
+// PingMessage -----------------------------------------------------------------
+
+std::vector<char> PingMessage::Serialize() const
+{
+    std::vector<char> rv(HEADER.begin(), HEADER.end());
+    rv.resize(Message::HEADER_LENGTH + 2);
+    memcpy(&rv.data()[4], &_ticks, 2);
+
+    return rv;
+}
+
+size_t PingMessage::Deserialize(const char* const msg)
+{
+    memcpy(&_ticks, &msg[Message::HEADER_LENGTH], 2);
+    return Message::HEADER_LENGTH + 2;
 }
 
 // MessageFactory --------------------------------------------------------------
@@ -41,6 +58,8 @@ std::unique_ptr<Message> MessageFactory::Get(std::string header)
         return std::unique_ptr<Message>(new ChatMessage());
     else if (header == TimeMessage::HEADER)
         return std::unique_ptr<Message>(new TimeMessage());
+    else if (header == PingMessage::HEADER)
+        return std::unique_ptr<Message>(new PingMessage());
     else
         return std::unique_ptr<Message>(new VoidMessage());
 }
