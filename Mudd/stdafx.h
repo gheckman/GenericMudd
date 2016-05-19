@@ -6,13 +6,10 @@
 #pragma once
 
 #include "targetver.h"
-
 #include <stdio.h>
 
 #if WIN32 || WIN64
 #include <tchar.h>
 #endif
-
-
 
 // TODO: reference additional headers your program requires here

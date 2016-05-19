@@ -1,19 +1,23 @@
 #include "stdafx.h"
 
-#include "MuddServer.hpp"
-#include "MuddClient.hpp"
 #include "CommandDecoder.hpp"
+#include "Console.hpp"
+#include "MuddClient.hpp"
+#include "MuddServer.hpp"
 
 #include <boost/thread/thread.hpp>
 
 void GetServerClient(void);
 void StartServer(void);
 void StartClient(void);
+void Test(void);
 
 int main(int argc, char* argv[])
 {
     srand((unsigned)time(NULL));
-    GetServerClient();
+
+    //GetServerClient();
+    Test();
 
     return 0;
 }
@@ -97,5 +101,49 @@ void StartClient(void)
     catch (std::exception& e)
     {
         std::cerr << "Exception: " << e.what() << "\n";
+    }
+}
+
+void Test()
+{
+    // insert some tests
+    auto sleep = [](int ms) { boost::this_thread::sleep(boost::posix_time::milliseconds(ms)); };
+
+    Console console;
+
+    int a = 26;
+    for (auto key = console.ReadKey(); key != 3; key = console.ReadKey())
+    {
+        int x, y;
+        console.GetCursor(x, y);
+        switch(key)
+        {
+            case KeyCode::ARROW_UP:
+            case KeyCode::KEYBOARD_UP:
+                console.SetCursor(x, y - 1);
+                break;
+            case KeyCode::ARROW_LEFT:
+            case KeyCode::KEYBOARD_LEFT:
+                console.SetCursor(x - 1, y);
+                break;
+            case KeyCode::ARROW_DOWN:
+            case KeyCode::KEYBOARD_DOWN:
+                console.SetCursor(x, y + 1);
+                break;
+            case KeyCode::ARROW_RIGHT:
+            case KeyCode::KEYBOARD_RIGHT:
+                console.SetCursor(x + 1, y);
+                break;
+            case 8: // backspace
+                console.SetCursor(x - 1, y);
+                console.WriteChar(' ');
+                break;
+            default:
+                console.WriteChar(key);
+                console.SetCursor(x + 1, y);
+                if (x == Console::WIDTH - 1)
+                    console.SetCursor(0, y + 1);
+                break;
+        }
     }
 }
