@@ -2,10 +2,17 @@
 
 enum KeyCode
 {
-    NONE = 0,
+    NONE = 0x00,
+
+    ASCII_MAX = 0x7f,
 
     KEY_TAG_1 = 0xe0,
     KEY_TAG_2 = 0x00,
+
+    SIGINT = 0x03,
+
+    BACKSPACE = 0x08,
+    ENTER = 0x0d,
 
     // First getch returns 0xe0
     PAGE_UP     =  0x149, // 73

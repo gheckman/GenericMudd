@@ -1,10 +1,13 @@
 #include "stdafx.h"
 
 #include "CommandDecoder.hpp"
+#include "Common.hpp"
 #include "Console.hpp"
+#include "ChatConsole.hpp"
 #include "MuddClient.hpp"
 #include "MuddServer.hpp"
 
+#include <string>
 #include <boost/thread/thread.hpp>
 
 void GetServerClient(void);
@@ -12,11 +15,25 @@ void StartServer(void);
 void StartClient(void);
 void Test(void);
 
+using namespace std::literals::string_literals;
+
 int main(int argc, char* argv[])
 {
     srand((unsigned)time(NULL));
 
-    //GetServerClient();
+    /*
+    if (argc > 1)
+    {
+        if (argv[1] == "--server"s || argv[1] == "-s"s)
+            StartServer();
+        else if (argv[1] == "--client"s || argv[1] == "-c"s)
+            StartClient();
+        else
+            GetServerClient();
+    }
+    else
+        GetServerClient();
+    */
     Test();
 
     return 0;
@@ -24,26 +41,25 @@ int main(int argc, char* argv[])
 
 void GetServerClient(void)
 {
-    std::cout << "Start as server or client? <s/c>: ";
+    Console console;
 
-    bool done = false;
-    do {
-        std::string s;
-        getline(std::cin, s);
-        switch(s[0])
-        {
-            case 'c':
-                std::cout << "Starting as client: " << std::endl;
-                StartClient();
-                done = true;
-                break;
-            case 's':
-                std::cout << "Starting as server: " << std::endl;
-                StartServer();
-                done = true;
-                break;
-        }
-    } while(!done);
+    console.Clear();
+    console.SetCursor(0, 0);
+
+    std::cout << "1.) Start as Client" << std::endl;
+    std::cout << "2.) Start as Server" << std::endl;
+
+    auto c = console.ReadChar({'1', '2'});
+
+    switch (c)
+    {
+        case '1': StartClient(); break;
+        case '2': StartServer(); break;
+        default: break;
+    }
+
+    console.Clear();
+    console.SetCursor(0, 0);
 }
 
 void StartServer(void)
@@ -107,43 +123,16 @@ void StartClient(void)
 void Test()
 {
     // insert some tests
-    auto sleep = [](int ms) { boost::this_thread::sleep(boost::posix_time::milliseconds(ms)); };
+    ChatConsole chatConsole(1, 1, 114, 20);
 
-    Console console;
+    chatConsole.AddMessage(RoomType::GLOBAL, "DeathTails", "Test message type 1");
+    chatConsole.AddMessage(RoomType::GLOBAL, "Trevor", "Test message type 2 abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyz");
 
-    int a = 26;
-    for (auto key = console.ReadKey(); key != 3; key = console.ReadKey())
+    for (int i = 0; i < 25; ++i)
     {
-        int x, y;
-        console.GetCursor(x, y);
-        switch(key)
-        {
-            case KeyCode::ARROW_UP:
-            case KeyCode::KEYBOARD_UP:
-                console.SetCursor(x, y - 1);
-                break;
-            case KeyCode::ARROW_LEFT:
-            case KeyCode::KEYBOARD_LEFT:
-                console.SetCursor(x - 1, y);
-                break;
-            case KeyCode::ARROW_DOWN:
-            case KeyCode::KEYBOARD_DOWN:
-                console.SetCursor(x, y + 1);
-                break;
-            case KeyCode::ARROW_RIGHT:
-            case KeyCode::KEYBOARD_RIGHT:
-                console.SetCursor(x + 1, y);
-                break;
-            case 8: // backspace
-                console.SetCursor(x - 1, y);
-                console.WriteChar(' ');
-                break;
-            default:
-                console.WriteChar(key);
-                console.SetCursor(x + 1, y);
-                if (x == Console::WIDTH - 1)
-                    console.SetCursor(0, y + 1);
-                break;
-        }
+        boost::this_thread::sleep(boost::posix_time::milliseconds(500));
+        chatConsole.AddMessage(RoomType::GLOBAL, "DeathTails", "Test message type " + std::to_string(i));
     }
+
+    getchar();
 }

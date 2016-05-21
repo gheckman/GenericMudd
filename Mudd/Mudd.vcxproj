@@ -154,6 +154,8 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="ChatConsole.hpp" />
+    <ClInclude Include="Common.hpp" />
     <ClInclude Include="Console.hpp" />
     <ClInclude Include="KeyCode.hpp" />
     <ClInclude Include="MuddClient.hpp" />
@@ -164,6 +166,7 @@
     <ClInclude Include="targetver.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="ChatConsole.cpp" />
     <ClCompile Include="CommandDecoder.cpp" />
     <ClCompile Include="Console.cpp" />
     <ClCompile Include="Message.cpp" />

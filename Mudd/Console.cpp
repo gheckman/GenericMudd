@@ -1,5 +1,6 @@
 #include "Console.hpp"
 
+#include <algorithm>
 #include <conio.h>
 #include <iostream>
 
@@ -20,6 +21,51 @@ void Console::GetCursor(int& x, int& y) const
     x = outInfo.dwCursorPosition.X;
     y = outInfo.dwCursorPosition.Y;
 }
+
+void Console::CursorUp() const
+{
+    int x, y;
+    GetCursor(x, y);
+    SetCursor(x, y - 1);
+}
+
+void Console::CursorLeft() const
+{
+    CursorLeft(false);
+}
+
+void Console::CursorLeft(bool wrap) const
+{
+    int x, y;
+    GetCursor(x, y);
+    if (x == 0 && y != 0 && wrap)
+        SetCursor(WIDTH - 1, y - 1);
+    else
+        SetCursor(x - 1, y);
+}
+
+void Console::CursorRight() const
+{
+    CursorRight(false);
+}
+
+void Console::CursorRight(bool wrap) const
+{
+    int x, y;
+    GetCursor(x, y);
+    if (x == WIDTH - 1 && y != HEIGHT - 1 && wrap)
+        SetCursor(0, y + 1);
+    else
+        SetCursor(x + 1, y);
+}
+
+void Console::CursorDown() const
+{
+    int x, y;
+    GetCursor(x, y);
+    SetCursor(x, y + 1);
+}
+
 
 void Console::ClearChar() const
 {
@@ -135,5 +181,62 @@ KeyCode Console::ReadKey()
             break;
     }
 
+    /*
+    if (keyValue == SIGINT)
+        std::terminate();
+    */
+
     return static_cast<KeyCode>(keyValue);
+}
+
+char Console::ReadChar()
+{
+    KeyCode key;
+    for (key = ReadKey(); key > ASCII_MAX; key = ReadKey());
+    return key;
+}
+
+char Console::ReadChar(const std::initializer_list<char>& whitelist)
+{
+    KeyCode key;
+    for (key = ReadKey(); key > ASCII_MAX || !std::any_of(whitelist.begin(), whitelist.end(), [&](char c) { return key == c; }); key = ReadKey());
+    return key;
+}
+
+std::string Console::ReadLine()
+{
+    int x, y;
+    GetCursor(x, y);
+    return ReadString(WIDTH - x);
+}
+
+std::string Console::ReadString(size_t length)
+{
+    return ReadString(length, {});
+}
+
+std::string Console::ReadString(size_t length, const std::initializer_list<char>& blackList)
+{
+    std::string rv;
+    for (auto key = ReadChar(); key != ENTER; key = ReadChar())
+    {
+        if (key == BACKSPACE)
+        {
+            if (!rv.empty())
+            {
+                if (rv.size() < length)
+                    CursorLeft();
+                WriteChar(' ');
+                rv.pop_back();
+            }
+        }
+        else if (rv.size() < length && !std::any_of(blackList.begin(), blackList.end(), [&](char c) { return key == c; }))
+        {
+            WriteChar(key);
+            CursorRight();
+            rv.push_back(key);
+        }
+    }
+
+    return rv;
 }

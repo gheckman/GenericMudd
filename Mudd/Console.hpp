@@ -26,6 +26,13 @@ public:
     void SetCursor(int x, int y) const;
     void GetCursor(int& x, int& y) const;
 
+    void CursorUp() const;
+    void CursorLeft() const;
+    void CursorLeft(bool wrap) const;
+    void CursorRight() const;
+    void CursorRight(bool wrap) const;
+    void CursorDown() const;
+
     void ClearChar() const;
     void ClearChar(int x, int y) const;
     void ClearString(int amount) const;
@@ -44,8 +51,13 @@ public:
     void WriteLine(int y, char c) const;
 
     KeyCode ReadKey();
+    char ReadChar();
+    char ReadChar(const std::initializer_list<char>& whitelist);
+    std::string ReadLine();
+    std::string ReadString(size_t length);
+    std::string ReadString(size_t length, const std::initializer_list<char>& blackList);
 
 private:
-    HANDLE output;
-    HANDLE input;
+    const HANDLE output;
+    const HANDLE input;
 };
