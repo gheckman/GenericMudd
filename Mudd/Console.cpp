@@ -6,6 +6,8 @@
 
 #include <boost/algorithm/clamp.hpp>
 
+#pragma region Cursor
+
 void Console::SetCursor(int x, int y) const
 {
     auto sx = static_cast<SHORT>(boost::algorithm::clamp(x, 0, WIDTH - 1));
@@ -66,6 +68,10 @@ void Console::CursorDown() const
     SetCursor(x, y + 1);
 }
 
+#pragma endregion
+
+
+#pragma region Write
 
 void Console::ClearChar() const
 {
@@ -165,6 +171,11 @@ void Console::WriteLine(int y, char c) const
     WriteString(0, y, WIDTH, c);
 }
 
+#pragma endregion
+
+
+#pragma region Read
+
 KeyCode Console::ReadKey()
 {
     auto keyValue = _getch();
@@ -240,3 +251,5 @@ std::string Console::ReadString(size_t length, const std::initializer_list<char>
 
     return rv;
 }
+
+#pragma endregion

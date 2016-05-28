@@ -8,5 +8,11 @@
 class CommandDecoder
 {
     public:
-    static std::unique_ptr<Message> Decode(const std::string& command);
+    CommandDecoder() : _userId(0) {}
+    CommandDecoder(int userId) : _userId(userId) {}
+
+    std::unique_ptr<Message> Decode(const std::string& command);
+
+    private:
+    int _userId;
 };

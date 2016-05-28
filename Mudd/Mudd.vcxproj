@@ -154,8 +154,10 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="BasicSerializer.hpp" />
     <ClInclude Include="ChatConsole.hpp" />
-    <ClInclude Include="Common.hpp" />
+    <ClInclude Include="CommonConst.hpp" />
+    <ClInclude Include="GameManager.hpp" />
     <ClInclude Include="Console.hpp" />
     <ClInclude Include="KeyCode.hpp" />
     <ClInclude Include="MuddClient.hpp" />
@@ -169,6 +171,7 @@
     <ClCompile Include="ChatConsole.cpp" />
     <ClCompile Include="CommandDecoder.cpp" />
     <ClCompile Include="Console.cpp" />
+    <ClCompile Include="GameManager.cpp" />
     <ClCompile Include="Message.cpp" />
     <ClCompile Include="MuddClient.cpp" />
     <ClCompile Include="MuddMain.cpp" />

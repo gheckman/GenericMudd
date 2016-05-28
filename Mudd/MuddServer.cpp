@@ -128,7 +128,7 @@ void MuddComm::ProcessMessage(const TimeMessage& timeMsg)
     MessageBuffer msgs;
     auto now = time(0);
     auto s = ctime(&now);
-    auto timeChat = std::unique_ptr<Message>(new ChatMessage(s));
+    auto timeChat = std::unique_ptr<Message>(new ChatMessage(0, s));
     
     msgs.Push(timeChat);
 

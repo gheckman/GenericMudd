@@ -55,7 +55,7 @@ void MuddClient::HandleReadBody(const boost::system::error_code& error)
     if (!error)
     {
         MessageBuffer msgs;
-        msgs.Deserialize(_readMsg.data());
+        msgs.Deserialize(_readMsg);
 
         ProcessMessageBuffer(msgs);
 

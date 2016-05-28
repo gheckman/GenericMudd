@@ -1,5 +1,5 @@
 #include "ChatConsole.hpp"
-#include "Common.hpp"
+#include "CommonConst.hpp"
 
 void ChatConsole::AddMessage(RoomType room, const std::string& username, const std::string& chatMessage)
 {

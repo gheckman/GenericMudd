@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Common.hpp"
+#include "CommonConst.hpp"
 #include "Console.hpp"
 
 #include <string>

@@ -1,7 +1,10 @@
+//#define TESTING
+
 #include "stdafx.h"
 
+#include "BasicSerializer.hpp"
 #include "CommandDecoder.hpp"
-#include "Common.hpp"
+#include "CommonConst.hpp"
 #include "Console.hpp"
 #include "ChatConsole.hpp"
 #include "MuddClient.hpp"
@@ -10,18 +13,19 @@
 #include <string>
 #include <boost/thread/thread.hpp>
 
+using namespace std::literals::string_literals;
+
 void GetServerClient(void);
 void StartServer(void);
 void StartClient(void);
+void GetHostConnectionData(boost::asio::io_service& ioService, tcp::resolver::iterator& ioIterator);
 void Test(void);
-
-using namespace std::literals::string_literals;
 
 int main(int argc, char* argv[])
 {
     srand((unsigned)time(NULL));
 
-    /*
+#ifndef TESTING
     if (argc > 1)
     {
         if (argv[1] == "--server"s || argv[1] == "-s"s)
@@ -33,8 +37,9 @@ int main(int argc, char* argv[])
     }
     else
         GetServerClient();
-    */
+#else
     Test();
+#endif
 
     return 0;
 }
@@ -51,15 +56,15 @@ void GetServerClient(void)
 
     auto c = console.ReadChar({'1', '2'});
 
+    console.Clear();
+    console.SetCursor(0, 0);
+
     switch (c)
     {
         case '1': StartClient(); break;
         case '2': StartServer(); break;
         default: break;
     }
-
-    console.Clear();
-    console.SetCursor(0, 0);
 }
 
 void StartServer(void)
@@ -85,26 +90,22 @@ void StartClient(void)
 {
     try
     {
-        std::string host = "127.0.0.1";
-        std::string port = "10616";
-
         boost::asio::io_service ioService;
+        tcp::resolver::iterator ioIterator;
+        GetHostConnectionData(ioService, ioIterator);
 
-        tcp::resolver resolver(ioService);
-        tcp::resolver::query query(host, port);
-        tcp::resolver::iterator iterator = resolver.resolve(query);
-
-        MuddClient client(ioService, iterator);
+        MuddClient client(ioService, ioIterator);
 
         boost::thread ioThread(boost::bind(&boost::asio::io_service::run, &ioService));
 
         std::string line;
         MessageBuffer msgs;
+        CommandDecoder decoder(0);
         while (getline(std::cin, line))
         {
             if (line != "")
             {
-                auto msg = CommandDecoder::Decode(line);
+                auto msg = decoder.Decode(line);
                 msgs.Push(msg);
                 client.Write(msgs);
                 msgs.Clear();
@@ -120,19 +121,32 @@ void StartClient(void)
     }
 }
 
-void Test()
+void GetHostConnectionData(boost::asio::io_service& ioService, tcp::resolver::iterator& ioIterator)
 {
-    // insert some tests
-    ChatConsole chatConsole(1, 1, 114, 20);
+    Console console;
+    std::string port("10616");
 
-    chatConsole.AddMessage(RoomType::GLOBAL, "DeathTails", "Test message type 1");
-    chatConsole.AddMessage(RoomType::GLOBAL, "Trevor", "Test message type 2 abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyz");
+    tcp::resolver resolver(ioService);
+    boost::system::error_code ec;
 
-    for (int i = 0; i < 25; ++i)
+    console.SetCursor(0, 0);
+    console.WriteString("Enter host ip: ");
+    do
     {
-        boost::this_thread::sleep(boost::posix_time::milliseconds(500));
-        chatConsole.AddMessage(RoomType::GLOBAL, "DeathTails", "Test message type " + std::to_string(i));
-    }
+        console.SetCursor(0, 1);
+        console.ClearLine();
+        auto hostIp = console.ReadLine();
+
+        tcp::resolver::query query(hostIp, port);
+        ioIterator = resolver.resolve(query, ec);
+    } while (ec);
+
+    console.SetCursor(0, 0);
+    console.Clear();
+}
+
+void Test(void)
+{
 
     getchar();
 }

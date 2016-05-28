@@ -1,40 +1,55 @@
 #include "Message.hpp"
+
+#include "BasicSerializer.hpp"
+
 #include <cstring>
 
-// Message Headers -------------------------------------------------------------
+#pragma region Headers
 
 const std::string Message::HEADER = "AMSG";
 const std::string VoidMessage::HEADER = "VOID";
+const std::string UsernameMessage::HEADER = "UNAM";
 const std::string ChatMessage::HEADER = "CHAT";
 const std::string TimeMessage::HEADER = "TIME";
 const std::string PingMessage::HEADER = "PING";
 
-// ChatMessage -----------------------------------------------------------------
+#pragma endregion
 
-void ChatMessage::Chat(const std::string& newChat)
-{
-    _chat = newChat;
-    if (_chat.size() > MAX_CHAT_SIZE)
-        _chat.resize(MAX_CHAT_SIZE);
-}
+
+#pragma region UsernameMessage
+
+#pragma endregion
+
+
+#pragma region ChatMessage
 
 std::vector<char> ChatMessage::Serialize() const
 {
-    std::vector<char> rv(HEADER.begin(), HEADER.end());
-    rv.push_back((char)_chat.size());
-    std::copy(Chat().begin(), Chat().end(), back_inserter(rv));
+    std::vector<char> rv;
+    BasicSerializer bs;
+    bs.Serialize(rv, HEADER);
+    bs.Serialize(rv, _userId);
+    bs.Serialize(rv, _chat);
 
     return rv;
 }
 
-size_t ChatMessage::Deserialize(const char* const msg)
+size_t ChatMessage::Deserialize(const std::vector<char>& msg)
 {
-    size_t size = msg[Message::HEADER_LENGTH];
-    Chat(std::string(&msg[HEADER_LENGTH + 1], size));
-    return Message::HEADER_LENGTH + 1 + size;
+    BasicSerializer bs;
+    int size = msg[Message::HEADER_LENGTH + 1];
+    std::vector<char> vecMsg(msg, msg + size);
+
+    size_t index = Message::HEADER_LENGTH;
+    index = bs.Deserialize(vecMsg, _userId, index);
+    index = bs.Deserialize(vecMsg, _chat, index);
+    return index;
 }
 
-// PingMessage -----------------------------------------------------------------
+#pragma endregion
+
+
+#pragma region PingMessage
 
 std::vector<char> PingMessage::Serialize() const
 {
@@ -51,7 +66,10 @@ size_t PingMessage::Deserialize(const char* const msg)
     return Message::HEADER_LENGTH + 2;
 }
 
-// MessageFactory --------------------------------------------------------------
+#pragma endregion 
+
+
+#pragma region MessageFactory
 
 std::unique_ptr<Message> MessageFactory::Get(std::string header)
 {
@@ -65,7 +83,10 @@ std::unique_ptr<Message> MessageFactory::Get(std::string header)
         return std::unique_ptr<Message>(new VoidMessage());
 }
 
-// MessageBuffer ---------------------------------------------------------------
+#pragma endregion 
+
+
+#pragma region MessageBuffer
 
 MessageBuffer::MessageBuffer(const MessageBuffer& rhs)
 {
@@ -107,7 +128,14 @@ std::vector<char> MessageBuffer::Serialize(void) const
     return rv;
 }
 
-size_t MessageBuffer::Deserialize(char* buf)
+int MessageBuffer::PayloadSize(const std::vector<char>& buf)
+{
+    int payload;
+    BasicSerializer bs;
+    bs.Deserialize(buf, payload, 2);
+}
+
+size_t MessageBuffer::Deserialize(std::vector<char> buf)
 {
     size_t totalBytes = 0;
     if (Version(buf) == VERSION)
@@ -115,11 +143,10 @@ size_t MessageBuffer::Deserialize(char* buf)
         totalBytes = HEADER_LENGTH;
         int count = Count(buf);
         Clear();
-        buf += HEADER_LENGTH;
 
         for (int i = count; i > 0; --i)
         {
-            auto msg = MessageFactory::Get(Message::GetHeader(buf));
+            auto msg = MessageFactory::Get(Message::GetHeader(buf.data() + totalBytes));
             size_t bytes = msg->Deserialize(buf);
             Push(msg);
 
@@ -134,3 +161,5 @@ size_t MessageBuffer::Deserialize(char* buf)
     }
     return totalBytes;
 }
+
+#pragma endregion 

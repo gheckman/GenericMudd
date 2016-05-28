@@ -1,5 +1,7 @@
 #pragma once
 
+#include "CommonConst.hpp"
+
 #include <algorithm>
 #include <cstdint>
 #include <iostream>
@@ -27,7 +29,7 @@ class Message
 
     virtual std::vector<char> Serialize(void) const { std::string header = Header(); return std::vector<char>(header.begin(), header.end()); }
 
-    virtual size_t Deserialize(const char* const) { return Message::HEADER_LENGTH; }
+    virtual size_t Deserialize(const std::vector<char>& msg) { return Message::HEADER_LENGTH; }
 };
 
 class VoidMessage : public Message
@@ -40,32 +42,49 @@ class VoidMessage : public Message
     virtual std::string Header(void) const override { return HEADER; };
 };
 
+class UsernameMessage : public Message
+{
+    public:
+    static const std::string HEADER;
+
+    Message* copy() const override { return new UsernameMessage(*this); };
+
+    virtual std::string Header(void) const override { return HEADER; };
+
+    private:
+    int _userId;
+    std::string _username;
+};
+
 class ChatMessage : public Message
 {
     public:
-    enum { MAX_CHAT_SIZE = 88 };
-
     static const std::string HEADER;
 
     ChatMessage(void) = default;
 
-    ChatMessage(const std::string& chat) { Chat(chat); }
+    ChatMessage(const int userId, const std::string& chat) : _userId(userId), _chat(chat) {  }
 
     Message* copy() const override { return new ChatMessage(*this); };
 
     virtual std::string Header(void) const override { return HEADER; };
 
-    const std::string& Chat(void) const { return _chat; }
+    int UserId(void) const { return _userId; }
 
-    void Chat(const std::string& newChat);
+    std::string Chat(void) const { return _chat; }
+
+    void Chat(const std::string& chat) { _chat = chat.substr(0, CHAT_MAX); }
+
+    void UserId(const uint8_t userId) { _userId = userId; }
 
     size_t Size(void) const { return HEADER_LENGTH + 1 + Chat().size(); }
 
     virtual std::vector<char> Serialize() const override;
 
-    virtual size_t Deserialize(const char* const msg) override;
+    virtual size_t Deserialize(const std::vector<char>& msg) override;
 
     private:
+    uint8_t _userId;
     std::string _chat;
 };
 
@@ -98,7 +117,7 @@ class PingMessage : public Message
 
     virtual std::vector<char> Serialize() const override;
 
-    virtual size_t Deserialize(const char* const msg) override;
+    virtual size_t Deserialize(const std::vector<char>& msg) override;
 
     private:
         uint16_t _ticks;
@@ -129,15 +148,15 @@ class MessageBuffer
 
     void Clear(void) { _messages.clear(); }
 
-    static int Version(const char* const msg) { return msg[0]; }
+    static int Version(const std::vector<char>& buf) { return buf[0]; }
 
-    static int Count(const char* const msg) { return msg[1]; }
+    static int Count(const std::vector<char>& buf) { return buf[1]; }
 
-    static int PayloadSize(const char* const msg) { return *(int*)(&msg[2]); }
+    static int PayloadSize(const std::vector<char>& buf);
 
     std::vector<char> Serialize(void) const;
 
-    size_t Deserialize(char* buf);
+    size_t Deserialize(std::vector<char> buf);
 
     private:
     std::list<std::unique_ptr<Message>> _messages;

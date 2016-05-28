@@ -42,7 +42,13 @@
     <ClInclude Include="ChatConsole.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Common.hpp">
+    <ClInclude Include="GameManager.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="CommonConst.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="BasicSerializer.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -69,6 +75,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="ChatConsole.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="GameManager.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
