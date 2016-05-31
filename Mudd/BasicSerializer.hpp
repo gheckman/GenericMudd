@@ -23,9 +23,9 @@ class BasicSerializer
         typename T,
         typename = typename std::enable_if<std::is_integral<T>::value, T>::type
     >
-    void Serialize(std::vector<char>& buffer, T number, size_t size)
+    void Serialize(std::vector<char>& buffer, T number, int size)
     {
-        for (size_t i = 0; i < size; ++i)
+        for (int i = 0; i < size; ++i)
         {
             buffer.push_back(number & 0xff);
             number >>= 8;
@@ -58,7 +58,7 @@ class BasicSerializer
         typename T,
         typename = typename std::enable_if<std::is_integral<T>::value, T>::type
     >
-    size_t Deserialize(const std::vector<char>& buffer, T& number, size_t index)
+    int Deserialize(const std::vector<char>& buffer, T& number, int index)
     {
         return Deserialize(buffer, number, index, sizeof(number));
     }
@@ -67,7 +67,7 @@ class BasicSerializer
         typename T,
         typename = typename std::enable_if<std::is_integral<T>::value, T>::type
     >
-    size_t Deserialize(const std::vector<char>& buffer, T& number, size_t index, size_t size)
+    int Deserialize(const std::vector<char>& buffer, T& number, int index, int size)
     {
         if (buffer.size() < index + size)
             return -1;
@@ -77,27 +77,25 @@ class BasicSerializer
         return index + size;
     }
 
-    size_t Deserialize(const std::vector<char>& buffer, float& number, size_t index)
+    int Deserialize(const std::vector<char>& buffer, float& number, int index)
     {
-        size_t newIndex;
         int32_t numberAsInt;
-        newIndex = Deserialize(buffer, numberAsInt, index);
+        index = Deserialize(buffer, numberAsInt, index);
         memcpy(&number, &numberAsInt, sizeof(number));
-        return newIndex;
+        return index;
     }
 
-    size_t Deserialize(const std::vector<char>& buffer, double& number, size_t index)
+    int Deserialize(const std::vector<char>& buffer, double& number, int index)
     {
-        size_t newIndex;
         int64_t numberAsInt;
-        newIndex = Deserialize(buffer, numberAsInt, index);
+        index = Deserialize(buffer, numberAsInt, index);
         memcpy(&number, &numberAsInt, sizeof(number));
-        return newIndex;
+        return index;
     }
 
-    size_t Deserialize(const std::vector<char>& buffer, std::string& item, size_t index)
+    int Deserialize(const std::vector<char>& buffer, std::string& item, int index)
     {
-        uint32_t size;
+        int size;
         auto newIndex = Deserialize(buffer, size, index);
         if (buffer.size() <= newIndex + size)
             item.assign(&buffer[newIndex], &buffer[newIndex + size - 1] + 1);

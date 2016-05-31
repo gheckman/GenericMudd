@@ -34,15 +34,12 @@ std::vector<char> ChatMessage::Serialize() const
     return rv;
 }
 
-size_t ChatMessage::Deserialize(const std::vector<char>& msg)
+int ChatMessage::Deserialize(const std::vector<char>& msg, int index)
 {
     BasicSerializer bs;
-    int size = msg[Message::HEADER_LENGTH + 1];
-    std::vector<char> vecMsg(msg, msg + size);
-
-    size_t index = Message::HEADER_LENGTH;
-    index = bs.Deserialize(vecMsg, _userId, index);
-    index = bs.Deserialize(vecMsg, _chat, index);
+    index += Message::HEADER_LENGTH;
+    index = bs.Deserialize(msg, _userId, index);
+    index = bs.Deserialize(msg, _chat, index);
     return index;
 }
 
@@ -53,17 +50,19 @@ size_t ChatMessage::Deserialize(const std::vector<char>& msg)
 
 std::vector<char> PingMessage::Serialize() const
 {
-    std::vector<char> rv(HEADER.begin(), HEADER.end());
-    rv.resize(Message::HEADER_LENGTH + 2);
-    memcpy(&rv.data()[4], &_ticks, 2);
-
+    std::vector<char> rv;
+    BasicSerializer bs;
+    bs.Serialize(rv, Header());
+    bs.Serialize(rv, _ticks);
     return rv;
 }
 
-size_t PingMessage::Deserialize(const char* const msg)
+int PingMessage::Deserialize(const std::vector<char>& msg, int index)
 {
-    memcpy(&_ticks, &msg[Message::HEADER_LENGTH], 2);
-    return Message::HEADER_LENGTH + 2;
+    BasicSerializer bs;
+    index += Message::HEADER_LENGTH;
+    index = bs.Deserialize(msg, _ticks, index);
+    return index;
 }
 
 #pragma endregion 
@@ -97,7 +96,7 @@ MessageBuffer::MessageBuffer(const MessageBuffer& rhs)
     }
 }
 
-std::unique_ptr<Message> MessageBuffer::Pop(void)
+std::unique_ptr<Message> MessageBuffer::Pop()
 {
     std::unique_ptr<Message> msg;
     if (!_messages.empty())
@@ -108,13 +107,19 @@ std::unique_ptr<Message> MessageBuffer::Pop(void)
     return msg;
 }
 
-std::vector<char> MessageBuffer::Serialize(void) const
+static int PayloadSize(const std::vector<char>& buf)
 {
-    std::vector<char> rv((size_t)HEADER_LENGTH);
-    uint32_t payloadSize = 0;
+    uint32_t payloadSize;
+    BasicSerializer bs;
+    bs.Deserialize(buf, payloadSize, 4);
+    return payloadSize;
+}
 
-    rv[0] = VERSION;
-    rv[1] = (char)_messages.size();
+std::vector<char> MessageBuffer::Serialize() const
+{
+    std::vector<char> rv, header;
+    BasicSerializer bs;
+    uint32_t payloadSize = 0;
 
     for (auto& message : _messages)
     {
@@ -123,43 +128,37 @@ std::vector<char> MessageBuffer::Serialize(void) const
         rv.insert(rv.end(), s.begin(), s.end());
     }
 
-    memcpy(rv.data() + 2, &payloadSize, sizeof(uint32_t));
+    bs.Serialize(header, static_cast<uint8_t>(VERSION));
+    bs.Serialize(rv, static_cast<uint8_t>(_messages.size()));
+    bs.Serialize(rv, payloadSize);
 
     return rv;
 }
 
-int MessageBuffer::PayloadSize(const std::vector<char>& buf)
+int MessageBuffer::Deserialize(const std::vector<char>& buf, int index)
 {
-    int payload;
-    BasicSerializer bs;
-    bs.Deserialize(buf, payload, 2);
-}
+    Clear();
 
-size_t MessageBuffer::Deserialize(std::vector<char> buf)
-{
-    size_t totalBytes = 0;
     if (Version(buf) == VERSION)
     {
-        totalBytes = HEADER_LENGTH;
-        int count = Count(buf);
-        Clear();
+        index += HEADER_LENGTH;
+        auto count = Count(buf);
 
-        for (int i = count; i > 0; --i)
+        for (auto i = count; i > 0; --i)
         {
-            auto msg = MessageFactory::Get(Message::GetHeader(buf.data() + totalBytes));
-            size_t bytes = msg->Deserialize(buf);
+            auto msg = MessageFactory::Get(Message::GetHeader(buf, index));
+            index = msg->Deserialize(buf, index);
             Push(msg);
-
-            totalBytes += bytes;
-            buf += bytes;
         }
     }
     else
     {
+        index = -1;
         std::cerr << __FUNCTION__ << std::endl;
         std::cerr << "Versions do not match: " << Version(buf) << " " << VERSION << std::endl;
     }
-    return totalBytes;
+
+    return index;
 }
 
 #pragma endregion 
