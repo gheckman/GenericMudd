@@ -2,24 +2,30 @@
 
 #include "stdafx.h"
 
+// 
 #include "BasicSerializer.hpp"
 #include "CommandDecoder.hpp"
 #include "CommonConst.hpp"
-#include "Console.hpp"
-#include "ChatConsole.hpp"
 #include "MuddClient.hpp"
 #include "MuddServer.hpp"
 
+//Standard
+#include <iostream>
 #include <string>
+
+//Boost
 #include <boost/thread/thread.hpp>
+
+//Curses
+#include <curses.h>
 
 using namespace std::literals::string_literals;
 
-void GetServerClient(void);
-void StartServer(void);
-void StartClient(void);
+void GetServerClient();
+void StartServer();
+void StartClient();
 void GetHostConnectionData(boost::asio::io_service& ioService, tcp::resolver::iterator& ioIterator);
-void Test(void);
+void Test();
 
 int main(int argc, char* argv[])
 {
@@ -44,30 +50,34 @@ int main(int argc, char* argv[])
     return 0;
 }
 
-void GetServerClient(void)
+void Test() { }
+
+void GetServerClient()
 {
-    Console console;
+    std::cout << "Start as server or client? <s/c>: ";
 
-    console.Clear();
-    console.SetCursor(0, 0);
-
-    std::cout << "1.) Start as Client" << std::endl;
-    std::cout << "2.) Start as Server" << std::endl;
-
-    auto c = console.ReadChar({'1', '2'});
-
-    console.Clear();
-    console.SetCursor(0, 0);
-
-    switch (c)
+    bool done = false;
+    do
     {
-        case '1': StartClient(); break;
-        case '2': StartServer(); break;
-        default: break;
-    }
+        std::string s;
+        getline(std::cin, s);
+        switch (s[0])
+        {
+            case 'c':
+                std::cout << "Starting as client: " << std::endl;
+                StartClient();
+                done = true;
+                break;
+            case 's':
+                std::cout << "Starting as server: " << std::endl;
+                StartServer();
+                done = true;
+                break;
+        }
+    } while (!done);
 }
 
-void StartServer(void)
+void StartServer()
 {
     try
     {
@@ -86,14 +96,13 @@ void StartServer(void)
     }
 }
 
-void StartClient(void)
+void StartClient()
 {
     try
     {
         boost::asio::io_service ioService;
         tcp::resolver::iterator ioIterator;
         GetHostConnectionData(ioService, ioIterator);
-
         MuddClient client(ioService, ioIterator);
 
         boost::thread ioThread(boost::bind(&boost::asio::io_service::run, &ioService));
@@ -101,8 +110,10 @@ void StartClient(void)
         std::string line;
         MessageBuffer msgs;
         CommandDecoder decoder(0);
-        while (getline(std::cin, line))
+
+        while(true)
         {
+            std::getline(std::cin, line);
             if (line != "")
             {
                 auto msg = decoder.Decode(line);
@@ -121,32 +132,20 @@ void StartClient(void)
     }
 }
 
+
 void GetHostConnectionData(boost::asio::io_service& ioService, tcp::resolver::iterator& ioIterator)
 {
-    Console console;
+    std::string hostIp;
     std::string port("10616");
 
     tcp::resolver resolver(ioService);
     boost::system::error_code ec;
 
-    console.SetCursor(0, 0);
-    console.WriteString("Enter host ip: ");
     do
     {
-        console.SetCursor(0, 1);
-        console.ClearLine();
-        auto hostIp = console.ReadLine();
-
+        std::cin.clear();
+        std::getline(std::cin, hostIp);
         tcp::resolver::query query(hostIp, port);
         ioIterator = resolver.resolve(query, ec);
     } while (ec);
-
-    console.SetCursor(0, 0);
-    console.Clear();
-}
-
-void Test(void)
-{
-
-    getchar();
 }

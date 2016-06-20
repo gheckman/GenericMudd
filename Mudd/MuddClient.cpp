@@ -38,7 +38,7 @@ void MuddClient::HandleReadHeader(const boost::system::error_code& error)
     if (!error)
     {
         // Get the payload size from the header
-        auto payloadSize = MessageBuffer::PayloadSize(_readMsg.data());
+        auto payloadSize = MessageBuffer::PayloadSize(_readMsg);
 
         // reserve enough space for the header and the payload, then read in the payload
         _readMsg.resize(MessageBuffer::HEADER_LENGTH + payloadSize, '\0');
@@ -55,7 +55,7 @@ void MuddClient::HandleReadBody(const boost::system::error_code& error)
     if (!error)
     {
         MessageBuffer msgs;
-        msgs.Deserialize(_readMsg);
+        msgs.Deserialize(_readMsg, 0);
 
         ProcessMessageBuffer(msgs);
 

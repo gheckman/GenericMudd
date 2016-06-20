@@ -54,6 +54,13 @@ class BasicSerializer
         std::copy(item.begin(), item.end(), std::back_inserter(buffer));
     }
 
+    void Serialize(std::vector<char>& buffer, const std::string& item, bool storeSize)
+    {
+        if (storeSize)
+            Serialize(buffer, item.size());
+        std::copy(item.begin(), item.end(), std::back_inserter(buffer));
+    }
+
     template <
         typename T,
         typename = typename std::enable_if<std::is_integral<T>::value, T>::type
@@ -67,7 +74,7 @@ class BasicSerializer
         typename T,
         typename = typename std::enable_if<std::is_integral<T>::value, T>::type
     >
-    int Deserialize(const std::vector<char>& buffer, T& number, int index, int size)
+    int Deserialize(const std::vector<char>& buffer, T& number, int index, size_t size)
     {
         if (buffer.size() < index + size)
             return -1;
@@ -95,11 +102,16 @@ class BasicSerializer
 
     int Deserialize(const std::vector<char>& buffer, std::string& item, int index)
     {
-        int size;
+        size_t size;
         auto newIndex = Deserialize(buffer, size, index);
-        if (buffer.size() <= newIndex + size)
-            item.assign(&buffer[newIndex], &buffer[newIndex + size - 1] + 1);
-        return newIndex + size;
+        return Deserialize(buffer, item, newIndex, size);
+    }
+
+    int Deserialize(const std::vector<char>& buffer, std::string& item, int index, size_t size)
+    {
+        if (buffer.size() <= index + size)
+            item.assign(&buffer[index], &buffer[index + size - 1] + 1);
+        return index + size;
     }
 
 };

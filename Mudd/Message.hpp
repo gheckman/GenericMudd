@@ -25,7 +25,7 @@ class Message
 
     virtual std::string Header() const { return HEADER; };
 
-    static std::string GetHeader(const std::vector<char>& msg, const int index) { return std::string(msg[index], msg[index + Message::HEADER_LENGTH]); }
+    static std::string GetHeader(const std::vector<char>& msg, const int index) { return std::string(&msg[index], &msg[index + Message::HEADER_LENGTH]); }
 
     virtual std::vector<char> Serialize() const { std::string header = Header(); return std::vector<char>(header.begin(), header.end()); }
 

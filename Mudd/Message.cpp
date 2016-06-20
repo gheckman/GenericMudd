@@ -27,7 +27,7 @@ std::vector<char> ChatMessage::Serialize() const
 {
     std::vector<char> rv;
     BasicSerializer bs;
-    bs.Serialize(rv, HEADER);
+    bs.Serialize(rv, HEADER, false);
     bs.Serialize(rv, _userId);
     bs.Serialize(rv, _chat);
 
@@ -52,7 +52,7 @@ std::vector<char> PingMessage::Serialize() const
 {
     std::vector<char> rv;
     BasicSerializer bs;
-    bs.Serialize(rv, Header());
+    bs.Serialize(rv, HEADER, false);
     bs.Serialize(rv, _ticks);
     return rv;
 }
@@ -107,11 +107,11 @@ std::unique_ptr<Message> MessageBuffer::Pop()
     return msg;
 }
 
-static int PayloadSize(const std::vector<char>& buf)
+int MessageBuffer::PayloadSize(const std::vector<char>& buf)
 {
     uint32_t payloadSize;
     BasicSerializer bs;
-    bs.Deserialize(buf, payloadSize, 4);
+    bs.Deserialize(buf, payloadSize, 2, 4);
     return payloadSize;
 }
 
@@ -129,8 +129,10 @@ std::vector<char> MessageBuffer::Serialize() const
     }
 
     bs.Serialize(header, static_cast<uint8_t>(VERSION));
-    bs.Serialize(rv, static_cast<uint8_t>(_messages.size()));
-    bs.Serialize(rv, payloadSize);
+    bs.Serialize(header, static_cast<uint8_t>(_messages.size()));
+    bs.Serialize(header, payloadSize);
+
+    rv.insert(rv.begin(), header.begin(), header.end());
 
     return rv;
 }

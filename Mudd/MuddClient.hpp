@@ -10,7 +10,6 @@
 
 #pragma once
 
-#include "ChatConsole.hpp"
 #include "Message.hpp"
 
 #include <chrono>
@@ -55,6 +54,4 @@ class MuddClient
     std::string _username;
     std::vector<char> _readMsg;
     std::vector<char> _writeMsg;
-    ChatConsole _chatConsole;
-
 };
